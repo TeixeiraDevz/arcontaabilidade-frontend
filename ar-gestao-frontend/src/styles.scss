@@ -1,0 +1,44 @@
+/* You can add global styles to this file, and also import other style files */
+@import "bootstrap/scss/functions";
+@import "bootstrap/scss/variables";
+@import "bootstrap/scss/maps";
+@import "bootstrap/scss/mixins";
+@import "bootstrap/scss/root";
+@import "bootstrap/scss/reboot";
+@import "bootstrap/scss/type";
+@import "bootstrap/scss/images";
+@import "bootstrap/scss/containers";
+@import "bootstrap/scss/grid";
+@import "bootstrap/scss/helpers";
+@import "bootstrap/scss/buttons";
+@import "bootstrap/scss/nav";
+@import "bootstrap/scss/navbar";
+@import "bootstrap/scss/dropdown";
+@import "bootstrap/scss/card";
+@import "bootstrap/scss/forms";
+@import "bootstrap/scss/utilities";
+
+/* Optional: enable color mode toggle via data attribute */
+:root,
+html[data-bs-theme='light'] {
+  color-scheme: light;
+}
+
+html[data-bs-theme='dark'] {
+  color-scheme: dark;
+}
+
+/* Layout helpers */
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+app-root {
+  display: contents;
+}
+
+.page-container {
+  flex: 1 1 auto;
+}
