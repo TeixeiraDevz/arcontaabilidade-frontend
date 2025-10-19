@@ -1,0 +1,220 @@
+# Planos de Desenvolvimento - AR Contabilidade
+
+## 📋 Plano: Front-end Angular (Bootstrap) para AR Gestão Contábil e Financeira
+
+### Escopo
+
+- Criar app Angular com TypeScript, UI com Bootstrap, rotas: Home, Clientes, Outsourcing
+- Arquitetura limpa (módulos `core`, `shared`, `features/*`, `infra`), princípios SOLID
+- Assistente de IA (widget flutuante) com serviço stub inicialmente; posterior integração ao back Spring Boot
+- Repositório do front separado, pronto para CI/CD e integração futura
+- Conteúdo inicial baseado no site antigo para referências de seções e copy básica ([site antigo](https://arcontabilidade-am.com.br/))
+
+### Stack
+
+- Angular 18+ (standalone desativado; usaremos NgModules para modularidade)
+- Bootstrap 5.x + `@ng-bootstrap/ng-bootstrap`
+- TypeScript estrito, ESLint + Prettier
+
+### Estrutura de pastas
+
+- `src/app/core/` (serviços base, guards, interceptors, tokens, config)
+- `src/app/shared/` (componentes, pipes, directives reutilizáveis)
+- `src/app/features/`
+  - `home/`
+  - `clientes/`
+  - `equipe/`
+  - `auth/` (login)
+  - `assistente/` (widget e chat)
+- `src/app/infra/` (adapters HTTP, mapeadores, gateways)
+- `src/app/routes/app-routing.module.ts`
+- `src/environments/` (`environment.ts`)
+- `src/assets/` (logo, cores, favicon)
+
+### Rotas iniciais
+
+- `/` → Home
+- `/clientes` → Informações para clientes (PF/PJ visão geral, links úteis)
+- `/equipe` → Equipe/Empresa (sobre, missão, valores, contatos)
+- `/login` → Login (stub de autenticação; integração futura)
+
+### UI/Branding moderno
+
+- Hero na Home com título forte, subtítulo e CTA (Contato/WhatsApp)
+- Cards para serviços principais (Contábil, Fiscal, RH) com ícones
+- Seção "Por que a AR Gestão?" com métricas/selos (anos de mercado, clientes)
+- Navbar sticky, offcanvas em mobile; footer limpo com mapa/link para contato
+- Tema Bootstrap com cores corporativas, tipografia moderna (Inter/Roboto)
+- Dark mode opcional (toggle simples com `data-bs-theme`)
+
+### Assistente de IA (fase 1)
+
+- Botão flutuante (FAB) abre um painel de chat
+- Serviço `AssistenteService` com stub (FAQs, links, encaminhar para contato)
+- Depois, gateway HTTP para back-end (`/ai/chat`)
+
+### Camadas e Clean Architecture
+
+- `core`: contratos (ports) e modelos domínio: `Cliente`, `TipoPessoa`, `Usuario`
+- `infra`: adapters HTTP implementando ports (`ClienteGateway`, `AuthGateway`)
+- `features`: casos de uso por feature
+- Dependências unidirecionais: features → core/shared; infra implementa ports de core
+
+### Serviços e Interceptadores
+
+- `AuthInterceptor` (injeta token quando existir)
+- `HttpErrorInterceptor` (tratamento genérico de erros)
+- `ApiConfigToken` para `API_BASE_URL` (de `environment`)
+
+### Acessibilidade e SEO
+
+- Metatags base (title, description), `og:*` e `twitter:*`
+- Roles ARIA, foco gerenciado no widget do assistente
+
+### Arquivos-chave
+
+- `angular.json`, `package.json` com Bootstrap e ng-bootstrap
+- `src/styles.scss` (import Bootstrap + overrides + tema)
+- `src/app/app.module.ts`, `src/app/routes/app-routing.module.ts`
+- `src/app/layout/header`, `src/app/layout/footer`
+- `src/app/features/{home,clientes,equipe,auth}/`
+- `src/app/features/assistente/assistant-widget.component.*`
+- `src/app/core/models/*.ts`, `src/app/core/ports/*.ts`
+- `src/app/infra/http/*.ts` (gateways)
+- `src/app/core/interceptors/*.ts`
+- `src/environments/environment*.ts`
+
+### Passos de build iniciais
+
+1. `npm install -g @angular/cli`
+2. `ng new ar-gestao-frontend --routing --style=scss`
+3. Adicionar Bootstrap: `npm i bootstrap @popperjs/core @ng-bootstrap/ng-bootstrap`
+4. Importar Bootstrap em `styles.scss`; configurar tema/corpo
+5. Criar `core`, `shared`, `infra`, `features/*` e rotas lazy
+6. Implementar layout (navbar, footer); Home com hero + cards
+7. Adicionar assistente (FAB + painel) com serviço stub
+8. ESLint/Prettier e scripts NPM (`lint`, `format`)
+
+### Integração futura com back Spring Boot
+
+- `AuthGateway` → `/auth/login`
+- `ClienteGateway` → `/clientes` (PF/PJ)
+- `AssistenteGateway` → `/ai/chat`
+- Base URL por ambiente via `environment`
+
+---
+
+## 🔗 Plano: Repositórios para Comunicação Frontend-Backend
+
+### Objetivo
+
+Implementar a camada de repositórios no Angular para comunicação com o backend (Spring Boot na porta 8080), seguindo o padrão com BaseRepository, e reorganizar a documentação do projeto.
+
+### Arquitetura da Solução
+
+#### 1. Configuração de Ambiente
+Criar arquivo de environment para gerenciar URL:
+- `frontend/src/environments/environment.ts` - desenvolvimento (http://localhost:8080)
+
+#### 2. Camada de Repositórios (`frontend/src/app/infra/repository/`)
+
+**BaseRepository** (classe abstrata):
+- Injetar `HttpClient` do Angular
+- Propriedade `apiUrl` protegida (do environment)
+- Método `getAuthHeaders()` para incluir token JWT do localStorage
+- Métodos auxiliares para requisições HTTP
+
+**Repositórios Específicos** (estendem BaseRepository):
+- `auth.repository.ts` - login, logout, validação de token
+- `cliente.repository.ts` - CRUD de clientes
+- `equipe.repository.ts` - operações de equipe
+- `assistente.repository.ts` - comunicação com IA modelo gemini
+
+#### 3. Models/DTOs (`frontend/src/app/core/models/`)
+Criar interfaces TypeScript para:
+- `auth.model.ts` - LoginRequest, LoginResponse, Usuario
+- `cliente.model.ts` - Cliente, ClienteDTO
+- `equipe.model.ts` - Membro, EquipeDTO
+- `assistente.model.ts` - ChatMessage, ChatResponse
+
+#### 4. Configuração do App
+- Adicionar `provideHttpClient()` no `app.config.ts`
+
+### Estrutura de Arquivos
+
+```
+frontend/src/
+├── environments/
+│   └── environment.ts           # apiUrl: 'http://localhost:8080'
+├── app/
+│   ├── core/
+│   │   └── models/
+│   │       ├── auth.model.ts
+│   │       ├── cliente.model.ts
+│   │       ├── equipe.model.ts
+│   │       └── assistente.model.ts
+│   └── infra/
+│       └── repository/
+│           ├── base.repository.ts
+│           ├── auth.repository.ts
+│           ├── cliente.repository.ts
+│           ├── equipe.repository.ts
+│           └── assistente.repository.ts
+```
+
+### Exemplo de Uso nos Services
+
+```typescript
+// No ClienteService
+constructor(private clienteRepo: ClienteRepository) {}
+
+listarClientes() {
+  return this.clienteRepo.getAll();
+}
+```
+
+### Preparação para Backend
+
+Quando criar o backend Spring Boot, configure CORS:
+```java
+@CrossOrigin(origins = "http://localhost:4200")
+```
+
+### Arquivos-Chave
+- `frontend/src/environments/environment.ts`
+- `frontend/src/app/app.config.ts` 
+- `frontend/src/app/infra/repository/base.repository.ts`
+- `frontend/src/app/core/models/*.model.ts`
+
+---
+
+## ✅ Status de Implementação
+
+### Frontend Angular - Base
+- [x] Inicializar projeto Angular e configurar TypeScript estrito
+- [x] Instalar Bootstrap e @ng-bootstrap, configurar styles.scss
+- [x] Criar módulos core, shared, infra e features
+- [x] Configurar AppRouting e lazy loading das features
+- [x] Implementar layout (navbar/header, footer, container)
+- [x] Criar página Home com hero, cards e CTA
+- [x] Criar página Clientes com infos PF/PJ e links úteis
+- [x] Criar página Equipe/Empresa (sobre, missão, valores)
+- [x] Criar página Login com formulário e serviço stub
+- [x] Criar widget de assistente de IA com serviço stub
+
+### Repositórios Frontend-Backend
+- [x] Criar arquivo environment.ts com configuração de apiUrl para desenvolvimento
+- [x] Criar interfaces/models no core (auth, cliente, equipe, assistente)
+- [x] Implementar BaseRepository abstrato com HttpClient e getAuthHeaders
+- [x] Criar repositórios específicos (auth, cliente, equipe, assistente) estendendo BaseRepository
+- [x] Adicionar provideHttpClient no app.config.ts
+- [x] Criar plans.readme consolidando planos e remover pasta .cursor
+
+### Próximos Passos
+- [ ] Adicionar AuthInterceptor e HttpErrorInterceptor
+- [ ] Configurar ApiConfigToken
+- [ ] Configurar ESLint/Prettier e scripts NPM
+- [ ] Implementar testes unitários para repositórios
+- [ ] Criar backend Spring Boot com endpoints correspondentes
+- [ ] Configurar CORS no backend
+- [ ] Implementar autenticação JWT no backend
